@@ -1,20 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const dotenv = require('dotenv');
+const handlerDB = require('../handlers/handlerdb')
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
 
 dotenv.config()
 
 const generateAcessToken = (email) => {
-  return jwt.sign(username, process.env.TOKEN_SECRET, { expiresIn: '3000s' })
+  return jwt.sign({email: email}, process.env.TOKEN_SECRET, { expiresIn: 60 * 60 })
 }
 
 router.post('/sign-up', async (req, res, next) => {
   try {
     const { email, password } = req.body;
+  
 
-    let isUser = await handlerDB.checkUser(email);
+    let user = await handlerDB.getUser(email);
 
-    if (isUser) {
+    if (user.length > 0) {
       res.status(401).json({ message: "User already exist. Did you forget your password?" })
       return;
     }
@@ -23,7 +28,7 @@ router.post('/sign-up', async (req, res, next) => {
 
     const hash = bcrypt.hashSync(password, saltRounds);
 
-    handlerDB.createUser(username, hash);
+    handlerDB.createUser(email, hash);
 
     res.json({ message: "User registred successfully!" })
   } catch (err) {
@@ -35,20 +40,27 @@ router.post('/login', async(req,res) => {
   try{
     const {email, password} = req.body;
 
-    let isUser = await handlerDB.checkUser(email);
+    let user = await handlerDB.getUser(email);
 
-    if(!isUser){
+    if(user.length == 0){
       return res.status(401).json({message: "Invalid email or password!"});
     }
+
+
+    let hash = Object.values( await handlerDB.getUser(email))[0].hashed_password
 
     if(bcrypt.compareSync(password, hash)){
       let token = generateAcessToken(email);
       res.json({token})
+    }else{
+      return res.status(401).json({message: "Invalid email or password!"});
     }
 
   }catch(err){
     res.status(401).send(err.message);
   }
 })
+
+
 
 module.exports = router;
