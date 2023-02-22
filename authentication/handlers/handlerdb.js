@@ -7,7 +7,7 @@ dotenv.config()
 
 async function getUser (email) {
     const client = new Client({
-        host: 'authentication_db',
+        host: 'localhost',
         port: 5432,
         user: process.env.DB_USR,
         password: process.env.DB_PASSWORD,
@@ -16,7 +16,7 @@ async function getUser (email) {
     })
     await client.connect()
 
-    const text = 'SELECT hashed_password, id, role FROM users WHERE email= $1'
+    const text = 'SELECT hashed_password, id FROM users WHERE email= $1'
     const values = [email]
 
     try {
@@ -32,7 +32,7 @@ async function getUser (email) {
 
 async function createUser(email, hash) {
     const client = new Client({
-        host: 'authentication_db',
+        host: 'localhost',
         port: 5432,
         user: process.env.DB_USR,
         password: process.env.DB_PASSWORD,
@@ -41,8 +41,8 @@ async function createUser(email, hash) {
     })
     await client.connect()
 
-    const text = 'INSERT INTO users(id, email, hashed_password, user_role) VALUES ($1,$2,$3,$4)'
-    const values = [uuidv4(),email, hash, "user"]
+    const text = 'INSERT INTO users(id, email, hashed_password) VALUES ($1,$2,$3)'
+    const values = [uuidv4(),email, hash]
 
     try {
         const res = await client.query(text, values)
@@ -53,9 +53,9 @@ async function createUser(email, hash) {
     }
 }
 
-async function insertRefreshToken(user_id, refresh_token) {
+async function createRole(id) {
     const client = new Client({
-        host: 'authentication_db',
+        host: 'localhost',
         port: 5432,
         user: process.env.DB_USR,
         password: process.env.DB_PASSWORD,
@@ -64,7 +64,32 @@ async function insertRefreshToken(user_id, refresh_token) {
     })
     await client.connect()
 
-    const text = 'INSERT INTO refresh_token(id, refresh_token, user_id) VALUES ($1,$2,$3)'
+    const text = 'INSERT INTO roles(id, user_id, role) VALUES ($1,$2,$3)'
+    const values = [uuidv4(),id, "user"]
+
+    try {
+        const res = await client.query(text, values)
+        await client.end()
+
+    } catch (err) {
+        console.log(err.stack)
+    }
+}
+
+
+
+async function insertRefreshToken(user_id, refresh_token) {
+    const client = new Client({
+        host: 'localhost',
+        port: 5432,
+        user: process.env.DB_USR,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME
+
+    })
+    await client.connect()
+
+    const text = 'INSERT INTO refresh_token(id, token, user_id) VALUES ($1,$2,$3)'
     const values = [uuidv4(),refresh_token, user_id]
 
     try {
@@ -78,7 +103,7 @@ async function insertRefreshToken(user_id, refresh_token) {
 
 async function getRefreshToken (id) {
     const client = new Client({
-        host: 'authentication_db',
+        host: 'localhost',
         port: 5432,
         user: process.env.DB_USR,
         password: process.env.DB_PASSWORD,
@@ -87,7 +112,7 @@ async function getRefreshToken (id) {
     })
     await client.connect()
 
-    const text = 'SELECT refresh_token FROM users WHERE id= $1'
+    const text = 'SELECT token FROM refresh_token WHERE id= $1'
     const values = [id]
 
     try {
@@ -105,4 +130,4 @@ async function getRefreshToken (id) {
 
 
 
-module.exports = {getUser, createUser, insertRefreshToken, getRefreshToken};
+module.exports = {getUser, createUser, insertRefreshToken, getRefreshToken, createRole};

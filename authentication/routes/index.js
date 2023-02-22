@@ -32,6 +32,7 @@ router.post('/sign-up', async (req, res, next) => {
     const hash = bcrypt.hashSync(password, saltRounds);
 
     handlerDB.createUser(email, hash);
+    handlerDB.createRole(user[0].id)
 
     res.json({ message: "User registred successfully!" })
   } catch (err) {
