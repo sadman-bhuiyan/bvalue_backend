@@ -8,8 +8,11 @@ const jwt = require('jsonwebtoken');
 
 dotenv.config()
 
-const generateAcessToken = (email) => {
-  return jwt.sign({email: email}, process.env.TOKEN_SECRET, { expiresIn: 60 * 60 })
+const generateAcessToken = (id) => {
+  return jwt.sign({id: id}, process.env.TOKEN_SECRET, { expiresIn: 3000 })
+}
+const generateRefreshToken = (id) => {
+  return jwt.sign({id: id}, process.env.TOKEN_SECRET, { expiresIn: 60 * 60 })
 }
 
 router.post('/sign-up', async (req, res, next) => {
@@ -40,17 +43,20 @@ router.post('/login', async(req,res) => {
   try{
     const {email, password} = req.body;
 
-    let user = await handlerDB.getUser(email);
+    let user = Object.values(await handlerDB.getUser(email));
 
     if(user.length == 0){
       return res.status(401).json({message: "Invalid email or password!"});
     }
 
 
-    let hash = Object.values( await handlerDB.getUser(email))[0].hashed_password
+    let hash = user[0].hashed_password
 
     if(bcrypt.compareSync(password, hash)){
-      let token = generateAcessToken(email);
+      let token = generateAcessToken(user[0].id);
+      if(Object.values(handlerDB.getRefreshToken(user[0].id).length == 0)){
+        handlerDB.insertRefreshToken(user[0].id, generateRefreshToken(user[0].id))
+      }
       res.json({token})
     }else{
       return res.status(401).json({message: "Invalid email or password!"});
