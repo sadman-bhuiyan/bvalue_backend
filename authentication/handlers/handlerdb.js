@@ -7,7 +7,7 @@ dotenv.config()
 
 async function getUser (email) {
     const client = new Client({
-        host: 'localhost',
+        host: 'authentication_db',
         port: 5432,
         user: process.env.DB_USR,
         password: process.env.DB_PASSWORD,
@@ -32,7 +32,7 @@ async function getUser (email) {
 
 async function createUser(email, hash) {
     const client = new Client({
-        host: 'localhost',
+        host: 'authentication_db',
         port: 5432,
         user: process.env.DB_USR,
         password: process.env.DB_PASSWORD,
@@ -42,11 +42,14 @@ async function createUser(email, hash) {
     await client.connect()
 
     const text = 'INSERT INTO users(id, email, hashed_password) VALUES ($1,$2,$3)'
-    const values = [uuidv4(),email, hash]
+    let id = uuidv4()
+    const values = [id,email, hash]
 
     try {
         const res = await client.query(text, values)
         await client.end()
+        
+        return {id}
 
     } catch (err) {
         console.log(err.stack)
@@ -55,7 +58,7 @@ async function createUser(email, hash) {
 
 async function createRole(id) {
     const client = new Client({
-        host: 'localhost',
+        host: 'authentication_db',
         port: 5432,
         user: process.env.DB_USR,
         password: process.env.DB_PASSWORD,
@@ -64,7 +67,7 @@ async function createRole(id) {
     })
     await client.connect()
 
-    const text = 'INSERT INTO roles(id, user_id, role) VALUES ($1,$2,$3)'
+    const text = 'INSERT INTO roles(id, user_id, user_role) VALUES ($1,$2,$3)'
     const values = [uuidv4(),id, "user"]
 
     try {
@@ -80,7 +83,7 @@ async function createRole(id) {
 
 async function insertRefreshToken(user_id, refresh_token) {
     const client = new Client({
-        host: 'localhost',
+        host: 'authentication_db',
         port: 5432,
         user: process.env.DB_USR,
         password: process.env.DB_PASSWORD,
@@ -103,7 +106,7 @@ async function insertRefreshToken(user_id, refresh_token) {
 
 async function getRefreshToken (id) {
     const client = new Client({
-        host: 'localhost',
+        host: 'authentication_db',
         port: 5432,
         user: process.env.DB_USR,
         password: process.env.DB_PASSWORD,

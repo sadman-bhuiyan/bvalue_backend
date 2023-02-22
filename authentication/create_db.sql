@@ -17,6 +17,5 @@ CREATE TABLE roles (
     id varchar(255),
     user_role varchar(255),
     user_id varchar(255),
-    PRIMARY KEY (id),
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    PRIMARY KEY (id)
 );

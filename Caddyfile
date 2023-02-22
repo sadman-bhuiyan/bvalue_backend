@@ -3,6 +3,11 @@
                 uri strip_prefix /authentication
                 reverse_proxy authentication:8080
         }
+
+        route /writer/* {
+                uri strip_prefix /writer
+                reverse_proxy writer:8082
+        }
 }
 
 

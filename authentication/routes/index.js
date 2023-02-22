@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const dotenv = require('dotenv');
 const handlerDB = require('../handlers/handlerdb')
+const handlerMQ = require('../handlers/handlermq')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -9,7 +10,7 @@ const jwt = require('jsonwebtoken');
 dotenv.config()
 
 const generateAcessToken = (id) => {
-  return jwt.sign({id: id}, process.env.TOKEN_SECRET, { expiresIn: 3000 })
+  return jwt.sign({id: id}, process.env.TOKEN_SECRET, { expiresIn: 120 })
 }
 const generateRefreshToken = (id) => {
   return jwt.sign({id: id}, process.env.TOKEN_SECRET, { expiresIn: 60 * 60 })
@@ -31,10 +32,10 @@ router.post('/sign-up', async (req, res, next) => {
 
     const hash = bcrypt.hashSync(password, saltRounds);
 
-    handlerDB.createUser(email, hash);
-    handlerDB.createRole(user[0].id)
-
-    res.json({ message: "User registred successfully!" })
+    let id = await handlerDB.createUser(email, hash);
+    await handlerDB.createRole(id.id)
+    await handlerMQ.sendData({action: "create_role", id: id.id})
+    res.json({ message: "Your account has been created" })
   } catch (err) {
     return res.status(401).send(err.message);
   }
@@ -56,7 +57,7 @@ router.post('/login', async(req,res) => {
     if(bcrypt.compareSync(password, hash)){
       let token = generateAcessToken(user[0].id);
       if(Object.values(handlerDB.getRefreshToken(user[0].id).length == 0)){
-        handlerDB.insertRefreshToken(user[0].id, generateRefreshToken(user[0].id))
+        await handlerDB.insertRefreshToken(user[0].id, generateRefreshToken(user[0].id))
       }
       res.json({token})
     }else{
