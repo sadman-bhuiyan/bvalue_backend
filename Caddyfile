@@ -1,0 +1,12 @@
+:80 {
+        route /authentication/* {
+                uri strip_prefix /authentication
+                reverse_proxy authentication:8080
+        }
+}
+
+
+
+
+
+
