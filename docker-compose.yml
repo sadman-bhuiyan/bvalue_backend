@@ -19,7 +19,7 @@ services:
     build:
       context: ./authentication
       dockerfile: Dockerfile
-    restart: on-failure
+    restart: always
     ports:
       - "8080:8080"
     depends_on:
@@ -29,7 +29,7 @@ services:
     environment:
       - POSTGRES_USER=${DB_USR}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_DB=${DB_AUTH_NAME}
     ports:
       - "5432:5432"
     volumes:
@@ -38,14 +38,14 @@ services:
     build:
       context: ./mq_consumer
       dockerfile: Dockerfile
-    restart: on-failure
+    restart: always
     ports:
       - "3000:3000"
   writer:
     build:
       context: ./writer
       dockerfile: Dockerfile
-    restart: on-failure
+    restart: always
     ports:
       - "8082:8080"
     depends_on:
@@ -55,10 +55,29 @@ services:
     environment:
       - POSTGRES_USER=${DB_USR}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_DB=${DB_WRITER_NAME}
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./writer/create_db.sql:/docker-entrypoint-initdb.d/db_event.sql
+  reader:
+    build:
+      context: ./reader
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8081:8080"
+    depends_on:
+      - reader_db
+  reader_db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=${DB_USR}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_READER_NAME}
     ports:
       - "5434:5432"
     volumes:
-      - ./writer/create_db.sql:/docker-entrypoint-initdb.d/db_event.sql
+      - ./reader/create_db.sql:/docker-entrypoint-initdb.d/db_event.sql
 
 
