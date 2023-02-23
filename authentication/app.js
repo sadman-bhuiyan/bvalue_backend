@@ -3,12 +3,14 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-
 const indexRouter = require('./routes/index.js');
+const { createAdminUser } = require('./handlers/handlerdb.js');
+
+
 
 const app = express();
 
-
+createAdminUser();
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -32,6 +34,8 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+
 
 if (!module.parent) {
   app.listen(8080);

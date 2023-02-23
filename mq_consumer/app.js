@@ -14,9 +14,25 @@ async function connectQueue() {
             let message = JSON.parse(data.content)
             switch (message.action){
                 case 'create_role':
-                    handlerDB.createRole(message.id)
+                    handlerDB.createRole("user",message.id)
+                    handlerDB.createRoleReader("user",message.id)
                     channel.ack(data);
                     break;
+                case 'create_role_admin':
+                    handlerDB.createRole("admin",message.id)
+                    handlerDB.createRoleReader("admin",message.id)
+                    channel.ack(data);
+                    break;
+                case 'create_profile':
+                    handlerDB.createProfile(message.id)
+                    handlerDB.createProfileReader(message.id)
+                    channel.ack(data);
+                    break;
+                case 'modify_profile':
+                        handlerDB.modifyProfile(message.user_id, message.name, message.surname, message.birthdate, message.gender, message.birthcity)
+                        handlerDB.modifyProfileReader(message.user_id, message.name, message.surname, message.birthdate, message.gender, message.birthcity)
+                        channel.ack(data);
+                        break;
                 default:
                     throw new Error(`Sorry, keyword "${message.action}" not recognized.`)
             }

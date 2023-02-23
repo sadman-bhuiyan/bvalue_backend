@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const handlerDB = require('../handlers/handlerdb');
+const handlerMQ = require('../handlers/handlermq');
 const jwt = require('jsonwebtoken');
 
 
@@ -31,10 +32,12 @@ router.put('/profile', authenticateToken, async (req, res, next) => {
 
         if (role == 'user') {
             await handlerDB.modifyProfile(req.user.id, name, surname, birthdate, gender, birthcity);
+            await handlerMQ.sendData({action: "modify_profile", user_id:req.user.id, name:name, surname:surname, birthdate:birthdate, gender:gender, birthcity:birthcity})
             res.json({ message: "User details saved successfully!" })
             //res.json({message: "You don't have permission to do this operation! Contact admin"})
         } else if (role == 'admin') {
             await handlerDB.modifyProfile(user_id, name, surname, birthdate, gender, birthcity);
+            await handlerMQ.sendData({action: "modify_profile", user_id:user_id, name:name, surname:surname, birthdate:birthdate, gender:gender, birthcity:birthcity})
             res.json({ message: "User details saved successfully!" })
         }
 

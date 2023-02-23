@@ -33,8 +33,9 @@ router.post('/sign-up', async (req, res, next) => {
     const hash = bcrypt.hashSync(password, saltRounds);
 
     let id = await handlerDB.createUser(email, hash);
-    await handlerDB.createRole(id.id)
+    await handlerDB.createRole("user",id.id)
     await handlerMQ.sendData({action: "create_role", id: id.id})
+    await handlerMQ.sendData({action: "create_profile", id: id.id})
     res.json({ message: "Your account has been created" })
   } catch (err) {
     return res.status(401).send(err.message);
