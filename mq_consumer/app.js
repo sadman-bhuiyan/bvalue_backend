@@ -29,8 +29,13 @@ async function connectQueue() {
                     channel.ack(data);
                     break;
                 case 'modify_profile':
-                        handlerDB.modifyProfile(message.user_id, message.name, message.surname, message.birthdate, message.gender, message.birthcity)
                         handlerDB.modifyProfileReader(message.user_id, message.name, message.surname, message.birthdate, message.gender, message.birthcity)
+                        channel.ack(data);
+                        break;
+                case 'delete_profile':
+                        handlerDB.deleteProfileReader(message.user_id);
+                        handlerDB.deleteRoleReader(message.user_id);
+                        handlerDB.deleteUser(message.user_id);
                         channel.ack(data);
                         break;
                 default:

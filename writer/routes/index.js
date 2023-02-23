@@ -48,25 +48,28 @@ router.put('/profile', authenticateToken, async (req, res, next) => {
     }
 });
 
-router.get('/profile', authenticateToken, async (req, res, next) => {
+router.delete('/profile', authenticateToken, async (req, res, next) => {
     try {
         const authHeader = req.headers['authorization']
         const token = authHeader && authHeader.split(' ')[1]
-
+        const { user_id } = req.body;
         let role = Object.values(await handlerDB.getRole(req.user.id))[0].user_role
-        let data;
+
         if (role == 'user') {
-            data = await handlerDB.getProfile(req.user.id)
+            res.json({message: "You don't have permission to do this operation! Contact admin"})
         } else if (role == 'admin') {
-            data = await handlerDB.getAllProfiles()
+            await handlerDB.deleteProfile(user_id);
+            await handlerDB.deleteRole(user_id);
+            await handlerMQ.sendData({action: "delete_profile", user_id:user_id})
+            res.json({ message: "User details deleted successfully!" })
         }
 
-
-        res.json({ profiles: data })
+        
 
     } catch (err) {
         res.status(401).send(err.message);
     }
 });
+
 
 module.exports = router;

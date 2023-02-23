@@ -128,5 +128,52 @@ async function modifyProfile(user_id, name, surname, birthdate, gender, birthcit
 
 }
 
+async function deleteProfile(user_id) {
+    const client = new Client({
+        host: 'writer_db',
+        port: 5432,
+        user: process.env.DB_USR,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME
 
-module.exports = { getProfile, getRole, getAllProfiles, modifyProfile };
+    })
+    await client.connect()
+
+    const text = 'DELETE FROM profile WHERE user_id=$1'
+    const values = [user_id]
+
+    try {
+        const res = await client.query(text, values)
+        await client.end()
+
+    } catch (err) {
+        console.log(err.stack)
+    }
+
+}
+async function deleteRole(user_id) {
+    const client = new Client({
+        host: 'writer_db',
+        port: 5432,
+        user: process.env.DB_USR,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME
+
+    })
+    await client.connect()
+
+    const text = 'DELETE FROM roles WHERE user_id=$1'
+    const values = [user_id]
+
+    try {
+        const res = await client.query(text, values)
+        await client.end()
+
+    } catch (err) {
+        console.log(err.stack)
+    }
+
+}
+
+
+module.exports = { getProfile, getRole, getAllProfiles, modifyProfile, deleteProfile, deleteRole };

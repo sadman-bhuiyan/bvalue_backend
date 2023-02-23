@@ -149,10 +149,83 @@ async function modifyProfileReader(user_id, name, surname, birthdate, gender, bi
 
 }
 
+async function deleteProfileReader(user_id) {
+    const client = new Client({
+        host: 'reader_db',
+        port: 5432,
+        user: process.env.DB_USR,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME_READER
+
+    })
+    await client.connect()
+
+    const text = 'DELETE FROM profile WHERE user_id=$1'
+    const values = [user_id]
+
+    try {
+        const res = await client.query(text, values)
+        await client.end()
+
+    } catch (err) {
+        console.log(err.stack)
+    }
+
+}
+
+async function deleteRoleReader(user_id) {
+    const client = new Client({
+        host: 'reader_db',
+        port: 5432,
+        user: process.env.DB_USR,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME_READER
+
+    })
+    await client.connect()
+
+    const text = 'DELETE FROM roles WHERE user_id=$1'
+    const values = [user_id]
+
+    try {
+        const res = await client.query(text, values)
+        await client.end()
+
+    } catch (err) {
+        console.log(err.stack)
+    }
+
+}
+
+async function deleteUser(user_id) {
+    const client = new Client({
+        host: 'authentication_db',
+        port: 5432,
+        user: process.env.DB_USR,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME_AUTH
+
+    })
+    await client.connect()
+
+    const text = 'DELETE FROM refresh_token WHERE user_id=$1'
+    const text_user = 'DELETE FROM users WHERE id=$1'
+    const values = [user_id]
+
+
+    try {
+        const res = await client.query(text, values);
+        const res_user = await client.query(text_user, values);
+        await client.end()
+
+    } catch (err) {
+        console.log(err.stack)
+    }
+
+}
 
 
 
 
 
-
-module.exports = {createRole, createProfile, createProfileReader, createRoleReader, modifyProfile, modifyProfileReader};
+module.exports = {createRole, createProfile, createProfileReader, createRoleReader, modifyProfile, modifyProfileReader, deleteRoleReader, deleteProfileReader, deleteUser};
