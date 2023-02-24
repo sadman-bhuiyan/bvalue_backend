@@ -31,11 +31,13 @@ router.put('/profile', authenticateToken, async (req, res, next) => {
         let role = Object.values(await handlerDB.getRole(req.user.id))[0].user_role
 
         if (role == 'user') {
+            console.log(req.body)
             await handlerDB.modifyProfile(req.user.id, name, surname, birthdate, gender, birthcity);
             await handlerMQ.sendData({action: "modify_profile", user_id:req.user.id, name:name, surname:surname, birthdate:birthdate, gender:gender, birthcity:birthcity})
             res.json({ message: "User details saved successfully!" })
             //res.json({message: "You don't have permission to do this operation! Contact admin"})
         } else if (role == 'admin') {
+            console.log(req.body)
             await handlerDB.modifyProfile(user_id, name, surname, birthdate, gender, birthcity);
             await handlerMQ.sendData({action: "modify_profile", user_id:user_id, name:name, surname:surname, birthdate:birthdate, gender:gender, birthcity:birthcity})
             res.json({ message: "User details saved successfully!" })

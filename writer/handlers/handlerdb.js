@@ -115,6 +115,8 @@ async function modifyProfile(user_id, name, surname, birthdate, gender, birthcit
     })
     await client.connect()
 
+    console.log(user_id)
+
     const text = 'UPDATE profile SET user_name=$1, user_surname=$2, user_birthdate=$3, user_gender=$4, user_birthcity=$5  WHERE user_id=$6'
     const values = [name, surname, birthdate, gender, birthcity, user_id]
 

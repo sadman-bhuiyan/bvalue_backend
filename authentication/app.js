@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const cors = require('cors');
 const indexRouter = require('./routes/index.js');
 const { createAdminUser } = require('./handlers/handlerdb.js');
 
@@ -11,7 +12,7 @@ const { createAdminUser } = require('./handlers/handlerdb.js');
 const app = express();
 
 createAdminUser();
-
+app.use(cors());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
