@@ -142,7 +142,7 @@ async function createAdminUser() {
       console.log("Admin user already exist, skipping...")
       return;
     }
-    await new Promise(resolve => setTimeout(resolve, 10000));
+    await new Promise(resolve => setTimeout(resolve, 20000));
     const saltRounds = parseInt(process.env.SALT_ROUNDS);
 
     const hash = bcrypt.hashSync(process.env.ADMIN_PASSWORD, saltRounds);
